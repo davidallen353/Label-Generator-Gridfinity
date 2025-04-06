@@ -35,31 +35,35 @@ batch_label_data = [
 
 
 /* [Part customization] */
-Component = "phillips head bolt"; // [phillips head bolt, phillips wood screw, Wall Anchor, Torx wood screw, Phillips head countersunk, Socket head bolt, Hex head bolt, Dome head bolt, Flat Head countersunk, Standard washer, Spring washer, Standard nut, Lock nut, Heat set inserts, Torx head bolt, Countersunk Torx head bolt]
-diameter = "M4";  // free text, e.g. "1/4-20", "#8-32"
-hardware_length = 24;
+Type = "Bolt"; // [Bolt, Nut, Washer]
+Shape = "Hex"; // [Hex, Round, Pan, Dome, Flat, Hex, Socket, Flat, Lock]
+Driver = "None" ; // [Torx, Phillips, Flathead, Hex, Allen, Torx]
+
+Hardware_Units = "Metric"; // [Metric, SAE, Fractional]
+Hardware_Diameter = "4";  // free text, e.g. "1/4-20", "#8-32"
+Hardware_Length = 24;
 
 /* [Label customization] */
-Y_units       = 1;          // [1,2,3]
-Label_color   = "#000000";  // color
-Content_color = "#FFFFFF";  // color
+Y_Units       = 1;          // [1,2,3]
+Label_Color   = "#000000";  // color
+Content_Color = "#FFFFFF";  // color
 
 /* [Text customization] */
 
 // Font type
-text_font = "Noto Sans SC:Noto Sans China"; // [HarmonyOS Sans, Inter, Inter Tight, Lora, Merriweather Sans, Montserrat, Noto Sans, Noto Sans SC:Noto Sans China, Noto Sans KR, Noto Emoji, Nunito, Nunito Sans, Open Sans, Open Sans Condensed, Oswald, Playfair Display, Plus Jakarta Sans, Raleway, Roboto, Roboto Condensed, Roboto Flex, Roboto Mono, Roboto Serif, Roboto Slab, Rubik, Source Sans 3, Ubuntu Sans, Ubuntu Sans Mono, Work Sans]
+TEXT_FONT = "Noto Sans SC:Noto Sans China"; // [HarmonyOS Sans, Inter, Inter Tight, Lora, Merriweather Sans, Montserrat, Noto Sans, Noto Sans SC:Noto Sans China, Noto Sans KR, Noto Emoji, Nunito, Nunito Sans, Open Sans, Open Sans Condensed, Oswald, Playfair Display, Plus Jakarta Sans, Raleway, Roboto, Roboto Condensed, Roboto Flex, Roboto Mono, Roboto Serif, Roboto Slab, Rubik, Source Sans 3, Ubuntu Sans, Ubuntu Sans Mono, Work Sans]
 // Font Style
-Font_Style = "Bold"; // [Regular,Black,Bold,ExtraBol,ExtraLight,Light,Medium,SemiBold,Thin,Italic,Black Italic,Bold Italic,ExtraBold Italic,ExtraLight Italic,Light Italic,Medium Italic,SemiBold Italic,Thin Italic]
+FONT_STYLE = "Bold"; // [Regular,Black,Bold,ExtraBol,ExtraLight,Light,Medium,SemiBold,Thin,Italic,Black Italic,Bold Italic,ExtraBold Italic,ExtraLight Italic,Light Italic,Medium Italic,SemiBold Italic,Thin Italic]
 // Flush text requires an AMS
-text_type  = "Raised Text";                  // [Raised Text, Flush Text]
+TEXT_TYPE  = "Raised Text";                  // [Raised Text, Flush Text]
 //Font size
-text_size  = 4.2;
+TEXT_SIZE  = 4.2;
 
 /* [Batch exporter] */
 // Enable this feature if you want generate a lot of different labels at once.
 // In the code editor on the left side edit the batch_label_data to the parts desired.
 // Make sure to type the names the same as the dropdowns above
-batch_export = false; // false
+Batch_Export = false; // false
 
 /* [Settings for nerds] */
 width    = 11.5;
@@ -70,9 +74,9 @@ $fs      = 0.1;
 $fa      = 5;
 
 /* [Hidden] */
-Font        = str(text_font, ":style=", Font_Style);
-length      = getDimensions(Y_units);
-text_height = (text_type == "Raised Text") ? 0.2 : 0.01;
+Font        = str(TEXT_FONT, ":style=", FONT_STYLE);
+length      = getDimensions(Y_Units);
+text_height = (TEXT_TYPE == "Raised Text") ? 0.2 : 0.01;
 
 
 //////////////////////////////////////////////////////////////
@@ -96,10 +100,10 @@ if (batch_export) {
 //////////////////////////////////////////////////////////////
 //               Dimension Helper Function                 //
 //////////////////////////////////////////////////////////////
-function getDimensions(Y_units) =
-    (Y_units == 1) ? 35.8 :
-    (Y_units == 2) ? 77.8 :
-    (Y_units == 3) ? 119.8 :
+function getDimensions(Y_Units) =
+    (Y_Units == 1) ? 35.8 :
+    (Y_Units == 2) ? 77.8 :
+    (Y_Units == 3) ? 119.8 :
     0;
 
 
@@ -137,7 +141,7 @@ module generate_multiple_labels() {
 //         MAIN LABEL MODULE (base + icons/text)           //
 //////////////////////////////////////////////////////////////
 module label(length, width, height, radius, champfer, Component, diameter, hardware_length) {
-    color(Label_color) {
+    color(Label_Color) {
         difference() {
             labelbase(length, width, height, radius, champfer);
 
@@ -149,7 +153,7 @@ module label(length, width, height, radius, champfer, Component, diameter, hardw
                 cylinder(h=height+1, d=1.5, center=true);
         }
     }
-    color(Content_color) {
+    color(Content_Color) {
         choose_Part_version(Component, hardware_length, width, height, diameter);
     }
 }
@@ -346,8 +350,8 @@ module Wall_Anchor(hardware_length, width, height, vertical_offset = 2.5) {
 
 // "drawBoltStem" for typical bolts/screws
 module drawBoltStem(hardware_length, text_height, start=[7, -1.25, 0], thickness=2.5) {
-    // The max length scales with Y_units; e.g. Y_units=1 => 20, Y_units=2 => 40, etc.
-    maxLen = 20 * Y_units;
+    // The max length scales with Y_Units; e.g. Y_Units=1 => 20, Y_Units=2 => 40, etc.
+    maxLen = 20 * Y_Units;
 
     // Final length is either the actual hardware_length or the scaled maxLen
     finalLen = (hardware_length > maxLen) ? maxLen : hardware_length;
@@ -566,7 +570,7 @@ module Phillips_Wood_Screw(hardware_length, width, height, vertical_offset = 2.5
 
     // We want to shorten the actual stem by 1.5 for the tip
     // Then clamp it to the same maxLen logic used in drawBoltStem
-    maxLen    = 20 * Y_units;
+    maxLen    = 20 * Y_Units;
     rawStem   = hardware_length - 1.5;  
     finalStem = (rawStem > maxLen) ? maxLen : rawStem;
     
@@ -610,7 +614,7 @@ module Torx_Wood_Screw(hardware_length, width, height, vertical_offset = 2.5) {
 
     // We want to shorten the actual stem by 1.5 for the tip
     // Then clamp it to the same maxLen logic used in drawBoltStem
-    maxLen    = 20 * Y_units;
+    maxLen    = 20 * Y_Units;
     rawStem   = hardware_length - 1.5;  
     finalStem = (rawStem > maxLen) ? maxLen : rawStem;
     
@@ -646,7 +650,7 @@ module bolt_text(diameter, Length, height) {
     translate([0, -3, height])
         linear_extrude(height=text_height)
             text(str(diameter, "x", Length),
-                 size   = text_size,
+                 size   = TEXT_SIZE,
                  font   = Font,
                  valign = "center",
                  halign = "center");
@@ -656,7 +660,7 @@ module nut_text(diameter, height) {
     translate([0, -3, height])
         linear_extrude(height=text_height)
             text(diameter, 
-                 size   = text_size,
+                 size   = TEXT_SIZE,
                  font   = Font,
                  valign = "center",
                  halign = "center");
@@ -666,7 +670,7 @@ module washer_text(diameter, height) {
     translate([0, -3, height])
         linear_extrude(height=text_height)
             text(diameter,
-                 size   = text_size,
+                 size   = TEXT_SIZE,
                  font   = Font,
                  valign = "center",
                  halign = "center");
